@@ -1,7 +1,8 @@
 
 enum FORM_FIELD{
     EMAIL="Email",
-    PASSWORD="Password"
+    PASSWORD="Password",
+    NAME="Name",
 }
 
 export {
