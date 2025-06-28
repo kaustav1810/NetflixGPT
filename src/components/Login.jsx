@@ -1,6 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { getErrorMessage } from '../utils/util';
 import { FORM_FIELD } from '../constants/formConstant';
+import { auth } from '../utils/firebase';
+import {
+	createUserWithEmailAndPassword,
+	signInWithEmailAndPassword,
+} from 'firebase/auth';
 
 export const Login = () => {
 	const [isLogin, setIsLogin] = useState(true);
@@ -14,18 +19,81 @@ export const Login = () => {
 		setIsLogin((prev) => !prev);
 	};
 
-	const handleInput = (inputRef, fieldName) => {
-		const errorMessage = getErrorMessage(
-			fieldName,
-			inputRef?.current?.value
-		);
+	const handleInput = useCallback(
+		(inputRef, fieldName) => {
+			const errorMessage = getErrorMessage(
+				fieldName,
+				inputRef?.current?.value
+			);
 
-		setError({
-			...error,
-			[fieldName]: errorMessage,
-		});
-	};
+			console.log(
+				errorMessage,
+				errorMessage === '',
+				'errorMessage'
+			);
 
+			setError({
+				...error,
+						[fieldName]: errorMessage,
+				  });
+
+			console.log(error, 'errorObj');
+		},
+		[error]
+	);
+
+
+	const handleSignIn = useCallback(() => {
+		
+		console.log(Object.values(error).join(''));
+
+		if (Object.values(error).join('').length > 0) return;
+
+		if (isLogin) {
+		
+			signInWithEmailAndPassword(
+				auth,
+				emailRef?.current?.value,
+				passwordRef?.current?.value
+			)
+				.then((userCredential) => {
+					// Signed in
+					const user = userCredential.user;
+					console.log(user, 'user');
+
+					// ...
+				})
+				.catch((error) => {
+					const errorCode = error.code;
+					const errorMessage = error.message;
+
+					alert(errorCode + ' ' + errorMessage);
+				});
+		}
+		else {
+			console.log('signing in.....')
+			createUserWithEmailAndPassword(
+				auth,
+				emailRef?.current?.value,
+				passwordRef?.current?.value
+			)
+				.then((userCredential) => {
+					// Signed up
+					const user = userCredential.user;
+
+					console.log(user, 'user');
+					// ...
+				})
+				.catch((error) => {
+					const errorCode = error.code;
+					const errorMessage = error.message;
+
+					alert(errorCode + " " + errorMessage);
+					// ..
+				});
+		}
+	}, [error, isLogin]);
+	
 	return (
 		<div className='px-12 h-[500px] justify-evenly absolute top-30 left-120 w-[30%] bg-black/40 z-[9999] flex flex-col'>
 			<h1 className='text-2xl text-white font-extrabold'>{`${
@@ -93,7 +161,7 @@ export const Login = () => {
 					</span>
 				)}
 			</div>
-			<button className='p-2 cursor-pointer bg-red-600 text-white'>{`${
+			<button onClick={handleSignIn} className={`p-2 cursor-pointer bg-red-600 text-white ${Object.keys(error)?.length>0 && 'disabled:cursor-not-allowed disabled:opacity-50'}`}>{`${
 				isLogin ? 'Sign In' : 'Sign Up'
 			}`}</button>
 			<div>
