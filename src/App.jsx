@@ -1,10 +1,34 @@
-import './App.css'
+import { useEffect } from 'react';
+import './App.css';
 import { Login } from './components/Login';
-import { BANNER_IMAGE, LOGO_IMAGE } from './constants/constant';
+import {
+	BANNER_IMAGE,
+	LOGO_IMAGE,
+} from './constants/constant';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './utils/firebase';
+import { useDispatch } from 'react-redux';
+import {
+	addUser,
+	removeUser,
+} from './slice/userSlice';
 
 function App() {
+	const dispatch = useDispatch();
 
-  return (
+	useEffect(() => {
+		onAuthStateChanged(auth, (user) => {
+			if (user) {
+				const { displayName, email } = user;
+
+				dispatch(addUser({ displayName, email }));
+			} else {
+				dispatch(removeUser());
+			}
+		});
+	}, []);
+
+	return (
 		<main className='relative w-full h-screen'>
 			<img
 				src={BANNER_IMAGE}
@@ -20,10 +44,10 @@ function App() {
 					alt='Netflix Logo'
 					className='w-full h-full object-contain'
 				/>
-      </div>
-      <Login/>
+			</div>
+			<Login />
 		</main>
 	);
 }
 
-export default App
+export default App;
