@@ -9,15 +9,19 @@ const getErrorMessage = (
 
 	switch (fieldName) {
 		case FORM_FIELD['EMAIL']:
-			if (!EMAIL_REGEX.test(fieldValue))
+			if (fieldValue?.trim() === '' || !EMAIL_REGEX.test(fieldValue))
 				errorMsg.push(
 					'Please enter a valid email'
 				);
 			break;
 		case FORM_FIELD['PASSWORD']:
-			fieldValue += '';
 
-			if (fieldValue.length <= 8) {
+		if (fieldValue?.trim() === '')
+			errorMsg.push(
+				'Please enter a valid password'
+			);
+
+			if (fieldValue?.length <= 8) {
 				errorMsg.push(
 					'Password must be more than 8 characters long, '
 				);
@@ -47,7 +51,7 @@ const getErrorMessage = (
 			break;
 
 		case FORM_FIELD['NAME']:
-			if (fieldValue.trim() === '')
+			if (fieldValue?.trim() === '')
 				errorMsg.push('Name cannot be empty');
 	}
 

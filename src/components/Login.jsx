@@ -1,4 +1,9 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, {
+	useCallback,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
 import { getErrorMessage } from '../utils/util';
 import { FORM_FIELD } from '../constants/formConstant';
 import { auth } from '../utils/firebase';
@@ -15,9 +20,19 @@ export const Login = () => {
 	const passwordRef = useRef(null);
 	const nameRef = useRef(null);
 
-	const toggleLoginForm = () => {
-		setIsLogin((prev) => !prev);
-	};
+	const refArr = [emailRef, passwordRef, nameRef];
+	
+		const toggleLoginForm = () => {
+			refArr?.forEach(
+				(ref) =>
+				{
+					if (ref.current)
+						ref.current.value = ""
+				}
+			);
+
+			setIsLogin((prev) => !prev);
+		};
 
 	const handleInput = useCallback(
 		(inputRef, fieldName) => {
@@ -26,76 +41,86 @@ export const Login = () => {
 				inputRef?.current?.value
 			);
 
-			console.log(
-				errorMessage,
-				errorMessage === '',
-				'errorMessage'
-			);
-
 			setError({
 				...error,
-						[fieldName]: errorMessage,
-				  });
-
-			console.log(error, 'errorObj');
+				[fieldName]: errorMessage,
+			});
 		},
 		[error]
 	);
 
+	const isLoginDisabled = useMemo(() => {
 
-	const handleSignIn = useCallback(() => {
-		
-		console.log(Object.values(error).join(''));
-
-		if (Object.values(error).join('').length > 0) return;
-
-		if (isLogin) {
-		
-			signInWithEmailAndPassword(
-				auth,
-				emailRef?.current?.value,
-				passwordRef?.current?.value
-			)
-				.then((userCredential) => {
-					// Signed in
-					const user = userCredential.user;
-					console.log(user, 'user');
-
-					// ...
-				})
-				.catch((error) => {
-					const errorCode = error.code;
-					const errorMessage = error.message;
-
-					alert(errorCode + ' ' + errorMessage);
-				});
-		}
-		else {
-			console.log('signing in.....')
-			createUserWithEmailAndPassword(
-				auth,
-				emailRef?.current?.value,
-				passwordRef?.current?.value
-			)
-				.then((userCredential) => {
-					// Signed up
-					const user = userCredential.user;
-
-					console.log(user, 'user');
-					// ...
-				})
-				.catch((error) => {
-					const errorCode = error.code;
-					const errorMessage = error.message;
-
-					alert(errorCode + " " + errorMessage);
-					// ..
-				});
-		}
+		return (
+			Object.values(error).join('').length > 0 ||
+			(!isLogin &&
+				(!nameRef?.current ||
+					nameRef?.current?.value?.trim() ===
+						'')) ||
+			!emailRef?.current ||
+			emailRef?.current?.value?.trim() === '' ||
+			!passwordRef?.current ||
+			passwordRef?.current?.value?.trim() === ''
+		);
 	}, [error, isLogin]);
-	
+
+	const handleUserAuthentication = useCallback(
+		(e) => {
+			e.preventDefault();
+
+			if (isLoginDisabled) {
+				return;
+			}
+
+			if (isLogin) {
+				signInWithEmailAndPassword(
+					auth,
+					emailRef?.current?.value,
+					passwordRef?.current?.value
+				)
+					.then((userCredential) => {
+						// Signed in
+						const user = userCredential.user;
+						console.log(user, 'user');
+
+						// ...
+					})
+					.catch((error) => {
+						const errorCode = error.code;
+						const errorMessage = error.message;
+
+						alert(errorCode + ' ' + errorMessage);
+					});
+			} else {
+				createUserWithEmailAndPassword(
+					auth,
+					emailRef?.current?.value,
+					passwordRef?.current?.value
+				)
+					.then((userCredential) => {
+						// Signed up
+						const user = userCredential.user;
+
+						console.log(user, 'user');
+						// ...
+					})
+					.catch((error) => {
+						const errorCode = error.code;
+						const errorMessage = error.message;
+
+						alert(errorCode + ' ' + errorMessage);
+						// ..
+					});
+			}
+		},
+		[isLogin, isLoginDisabled]
+	);
+
+
 	return (
-		<div className='px-12 h-[500px] justify-evenly absolute top-30 left-120 w-[30%] bg-black/40 z-[9999] flex flex-col'>
+		<form
+			onSubmit={handleUserAuthentication}
+			className='px-12 h-[500px] justify-evenly absolute top-30 left-120 w-[30%] bg-black/40 z-[9999] flex flex-col'>
 			<h1 className='text-2xl text-white font-extrabold'>{`${
 				isLogin ? 'Sign In' : 'Sign Up'
 			}`}</h1>
@@ -161,7 +186,14 @@ export const Login = () => {
 					</span>
 				)}
 			</div>
-			<button onClick={handleSignIn} className={`p-2 cursor-pointer bg-red-600 text-white ${Object.keys(error)?.length>0 && 'disabled:cursor-not-allowed disabled:opacity-50'}`}>{`${
+			<button
+				type='submit'
+				onClick={handleUserAuthentication}
+				className={`p-2 bg-red-600 text-white ${
+					isLoginDisabled
+						? 'disabled cursor-not-allowed opacity-50'
+						: 'cursor-pointer'
+				}`}>{`${
 				isLogin ? 'Sign In' : 'Sign Up'
 			}`}</button>
 			<div>
@@ -180,6 +212,6 @@ export const Login = () => {
 					}`}
 				</a>
 			</div>
-		</div>
+		</form>
 	);
 };
