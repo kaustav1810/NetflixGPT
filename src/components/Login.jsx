@@ -4,8 +4,8 @@ import React, {
 	useRef,
 	useState,
 } from 'react';
-import { getErrorMessage } from '../utils/util';
-import { FORM_FIELD } from '../constants/formConstant';
+import { clearFormFields, getDisplayErrorMessage, getErrorMessage } from '../utils/util';
+import { AUTH_ERROR, FORM_FIELD } from '../constants/formConstant';
 import { auth } from '../utils/firebase';
 import {
 	createUserWithEmailAndPassword,
@@ -31,6 +31,8 @@ export const Login = () => {
 				}
 			);
 
+			setError({})
+
 			setIsLogin((prev) => !prev);
 		};
 
@@ -44,6 +46,7 @@ export const Login = () => {
 			setError({
 				...error,
 				[fieldName]: errorMessage,
+				[AUTH_ERROR]:""
 			});
 		},
 		[error]
@@ -52,6 +55,7 @@ export const Login = () => {
 	const isLoginDisabled = useMemo(() => {
 
 		return (
+			error[AUTH_ERROR] ||
 			Object.values(error).join('').length > 0 ||
 			(!isLogin &&
 				(!nameRef?.current ||
@@ -63,6 +67,15 @@ export const Login = () => {
 			passwordRef?.current?.value?.trim() === ''
 		);
 	}, [error, isLogin]);
+
+	const handleLoginError = ({message}) => {
+		const errorMessage = getDisplayErrorMessage(
+			message
+		);
+
+		setError({ [AUTH_ERROR]: errorMessage });
+
+	}
 
 	const handleUserAuthentication = useCallback(
 		(e) => {
@@ -79,18 +92,15 @@ export const Login = () => {
 					passwordRef?.current?.value
 				)
 					.then((userCredential) => {
+						
+						clearFormFields(refArr);
 						// Signed in
 						const user = userCredential.user;
 						console.log(user, 'user');
-
-						// ...
 					})
 					.catch((error) => {
-						const errorCode = error.code;
-						const errorMessage = error.message;
-
-						alert(errorCode + ' ' + errorMessage);
-					});
+						handleLoginError(error);
+							});
 			} else {
 				createUserWithEmailAndPassword(
 					auth,
@@ -105,22 +115,17 @@ export const Login = () => {
 						// ...
 					})
 					.catch((error) => {
-						const errorCode = error.code;
-						const errorMessage = error.message;
-
-						alert(errorCode + ' ' + errorMessage);
-						// ..
-					});
+						handleLoginError(error);					});
 			}
 		},
-		[isLogin, isLoginDisabled]
+		[isLogin, isLoginDisabled, refArr]
 	);
 
 
 	return (
 		<form
 			onSubmit={handleUserAuthentication}
-			className='px-12 h-[500px] justify-evenly absolute top-30 left-120 w-[30%] bg-black/40 z-[9999] flex flex-col'>
+			className='px-12 h-[500px] justify-evenly absolute top-1/4 left-1/2 -translate-x-1/2 w-[80vw] max-w-sm min-w-[320px] bg-black/40 z-[9999] flex flex-col'>
 			<h1 className='text-2xl text-white font-extrabold'>{`${
 				isLogin ? 'Sign In' : 'Sign Up'
 			}`}</h1>
@@ -196,6 +201,11 @@ export const Login = () => {
 				}`}>{`${
 				isLogin ? 'Sign In' : 'Sign Up'
 			}`}</button>
+			{error[AUTH_ERROR] && (
+				<span className='text-red-500 text-[0.8rem]'>
+					{error[AUTH_ERROR]}
+				</span>
+			)}
 			<div>
 				<span className='text-gray-400'>
 					{`${

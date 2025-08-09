@@ -5,6 +5,6 @@ enum FORM_FIELD{
     NAME="Name",
 }
 
-export {
-    FORM_FIELD
-}
+const AUTH_ERROR = 'authError';
+
+export { FORM_FIELD, AUTH_ERROR };

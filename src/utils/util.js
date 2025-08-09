@@ -57,4 +57,18 @@ const getErrorMessage = (
 
 	return errorMsg.join(',');
 };
-export { getErrorMessage };
+
+
+const getDisplayErrorMessage = (errorMessage) => errorMessage?.slice(errorMessage?.indexOf("(") + 1, errorMessage?.indexOf(")"));
+
+
+const clearFormFields = (formFieldsRef) => {
+	formFieldsRef?.forEach((fieldRef) => {
+		if (fieldRef.current) fieldRef.current.value = '';
+	});
+}
+export {
+	getErrorMessage,
+	getDisplayErrorMessage,
+	clearFormFields
+};
