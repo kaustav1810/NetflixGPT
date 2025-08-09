@@ -1,17 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import './App.css';
-import { Login } from './components/Login';
+
 import {
-	BANNER_IMAGE,
-	LOGO_IMAGE,
-} from './constants/constant';
-import { onAuthStateChanged } from 'firebase/auth';
+	onAuthStateChanged,
+	signOut,
+} from 'firebase/auth';
 import { auth } from './utils/firebase';
 import { useDispatch } from 'react-redux';
 import {
 	addUser,
 	removeUser,
 } from './slice/userSlice';
+import {
+	Outlet,
+	useNavigate,
+} from 'react-router-dom';
+import Navbar from './components/Navbar';
 
 function App() {
 	const dispatch = useDispatch();
@@ -23,32 +27,17 @@ function App() {
 
 				dispatch(addUser({ displayName, email }));
 			} else {
+				console.log('Logged out!!');
 				dispatch(removeUser());
 			}
 		});
 	}, []);
 
 	return (
-		<main className='relative w-full min-h-screen'>
-			<img
-				src={BANNER_IMAGE}
-				className='w-full min-h-screen object-cover'
-				alt='Netflix Banner Image'
-			/>
-			{/* Dark Overlay */}
-			<div className='absolute inset-0 bg-black/60 z-10'></div>
-
-			<div className='absolute top-0 left-40 w-48 h-20 z-[999] '>
-				<img
-					src={LOGO_IMAGE}
-					alt='Netflix Logo'
-					className='w-full h-full object-contain'
-				/>
-			</div>
-			<div className='flex items-center justify-center h-full z-20'>
-				<Login />
-			</div>
-		</main>
+		<>
+			<Navbar />
+			<Outlet />
+		</>
 	);
 }
 

@@ -4,15 +4,29 @@ import React, {
 	useRef,
 	useState,
 } from 'react';
-import { clearFormFields, getDisplayErrorMessage, getErrorMessage } from '../utils/util';
-import { AUTH_ERROR, FORM_FIELD } from '../constants/formConstant';
+import {
+	clearFormFields,
+	getDisplayErrorMessage,
+	getErrorMessage,
+} from '../utils/util';
+import {
+	AUTH_ERROR,
+	FORM_FIELD,
+} from '../constants/formConstant';
 import { auth } from '../utils/firebase';
 import {
 	createUserWithEmailAndPassword,
 	signInWithEmailAndPassword,
 } from 'firebase/auth';
 
+import { useNavigate} from 'react-router-dom';
+import { BANNER_IMAGE } from '../constants/constant';
+
 export const Login = () => {
+
+
+	const navigate = useNavigate();
+
 	const [isLogin, setIsLogin] = useState(true);
 	const [error, setError] = useState({});
 
@@ -21,20 +35,16 @@ export const Login = () => {
 	const nameRef = useRef(null);
 
 	const refArr = [emailRef, passwordRef, nameRef];
-	
-		const toggleLoginForm = () => {
-			refArr?.forEach(
-				(ref) =>
-				{
-					if (ref.current)
-						ref.current.value = ""
-				}
-			);
 
-			setError({})
+	const toggleLoginForm = () => {
+		refArr?.forEach((ref) => {
+			if (ref.current) ref.current.value = '';
+		});
 
-			setIsLogin((prev) => !prev);
-		};
+		setError({});
+
+		setIsLogin((prev) => !prev);
+	};
 
 	const handleInput = useCallback(
 		(inputRef, fieldName) => {
@@ -46,14 +56,13 @@ export const Login = () => {
 			setError({
 				...error,
 				[fieldName]: errorMessage,
-				[AUTH_ERROR]:""
+				[AUTH_ERROR]: '',
 			});
 		},
 		[error]
 	);
 
 	const isLoginDisabled = useMemo(() => {
-
 		return (
 			error[AUTH_ERROR] ||
 			Object.values(error).join('').length > 0 ||
@@ -68,14 +77,12 @@ export const Login = () => {
 		);
 	}, [error, isLogin]);
 
-	const handleLoginError = ({message}) => {
-		const errorMessage = getDisplayErrorMessage(
-			message
-		);
+	const handleLoginError = ({ message }) => {
+		const errorMessage =
+			getDisplayErrorMessage(message);
 
 		setError({ [AUTH_ERROR]: errorMessage });
-
-	}
+	};
 
 	const handleUserAuthentication = useCallback(
 		(e) => {
@@ -92,15 +99,17 @@ export const Login = () => {
 					passwordRef?.current?.value
 				)
 					.then((userCredential) => {
-						
 						clearFormFields(refArr);
 						// Signed in
 						const user = userCredential.user;
 						console.log(user, 'user');
+
+						navigate("/browse")
 					})
 					.catch((error) => {
 						handleLoginError(error);
-							});
+						navigate("/")
+					});
 			} else {
 				createUserWithEmailAndPassword(
 					auth,
@@ -115,14 +124,21 @@ export const Login = () => {
 						// ...
 					})
 					.catch((error) => {
-						handleLoginError(error);					});
+						handleLoginError(error);
+					});
 			}
 		},
 		[isLogin, isLoginDisabled, refArr]
 	);
 
-
 	return (
+		<main className='relative w-full min-h-screen'>
+			<img
+				src={BANNER_IMAGE}
+				className='w-full min-h-screen object-cover'
+				alt='Netflix Banner Image'
+          />
+			<div className='flex items-center justify-center h-full z-20'>
 		<form
 			onSubmit={handleUserAuthentication}
 			className='px-12 h-[500px] justify-evenly absolute top-1/4 left-1/2 -translate-x-1/2 w-[80vw] max-w-sm min-w-[320px] bg-black/40 z-[9999] flex flex-col'>
@@ -222,6 +238,8 @@ export const Login = () => {
 					}`}
 				</a>
 			</div>
-		</form>
+			</form>
+			</div>
+			</main>
 	);
 };
