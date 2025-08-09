@@ -29,10 +29,10 @@ function App() {
 	}, []);
 
 	return (
-		<main className='relative w-full h-screen'>
+		<main className='relative w-full min-h-screen'>
 			<img
 				src={BANNER_IMAGE}
-				className='w-full h-full object-cover'
+				className='w-full min-h-screen object-cover'
 				alt='Netflix Banner Image'
 			/>
 			{/* Dark Overlay */}
@@ -45,7 +45,9 @@ function App() {
 					className='w-full h-full object-contain'
 				/>
 			</div>
-			<Login />
+			<div className='flex items-center justify-center h-full z-20'>
+				<Login />
+			</div>
 		</main>
 	);
 }
