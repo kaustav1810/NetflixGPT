@@ -1,37 +1,41 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import {
-	BANNER_IMAGE,
-	LOGO_IMAGE,
+	LOGO_IMAGE
 } from '../constants/constant';
 
+import { signOut } from 'firebase/auth';
+import { useSelector } from 'react-redux';
+import DefaultAvatar from '../assets/Profile_Avatar.jpg';
+import { auth } from '../utils/firebase';
 
 const Navbar = () => {
 
-    	const navigate = useNavigate();
+	const [showPopover, setShowPopover] =
+		useState(false);
 
-			const [showPopover, setShowPopover] =
-                useState(false);
-    
-    	const togglePopover = () => {
-				setShowPopover((prev) => !prev);
-			};
+	const currentUser = useSelector(
+		(state) => state.user
+	);
 
-			const handleSignOut = () => {
-				signOut(auth)
-					.then(() => {
-						// Sign-out successful.
+	console.log(currentUser, 'currentUser');
 
-						navigate('/');
-					})
-					.catch((error) => {
-						// An error happened.
-					});
-            };
-    
-  return (
-      <>
-          
+	const togglePopover = () => {
+		setShowPopover((prev) => !prev);
+	};
+
+	const handleSignOut = () => {
+		signOut(auth)
+			.then(() => {
+				// navigate('/');
+			})
+			.catch((error) => {
+				console.log(error);
+				// An error happened.
+			});
+	};
+
+	return (
+		<>
 			{/* Dark Overlay */}
 			<div className='absolute inset-0 bg-black/60 z-10'></div>
 
@@ -41,32 +45,44 @@ const Navbar = () => {
 					alt='Netflix Logo'
 					className='w-48 h-20 '
 				/>
-				<div
-					className=' flex justify-center items-center hover:cursor-pointer top-3.5'
-					onMouseOver={() => setShowPopover(true)}
-					onMouseOut={() => setShowPopover(false)}
-					onClick={togglePopover}>
-					<img
-						className='w-[50px] h-[50px] object-contain'
-						src='https://occ-0-2232-3662.1.nflxso.net/dnm/api/v6/vN7bi_My87NPKvsBoib006Llxzg/AAAABcLtVOXjghzlDrVwmPHGQtkXjoJPmpISBttze62ZpxaaFWq-LZVH5yZxMD15UVLU6nd4GIUtTSHOMsbUOdPCIYRL2-2bGNU.png?r=b38'
-						alt='profile image'
-					/>
-					<span className='text-3xl font-bold'>
-						˯
-					</span>
-					{showPopover && (
-						<div className='absolute min-w-[100px] flex flex-col top-1/2 translate-y-8 border-2 p-1.5 backdrop-blur-2xl hover:cursor-pointer'>
-							<a
-								className='hover:cursor-pointer'
-								onClick={handleSignOut}>
-								Logout
-							</a>
-						</div>
-					)}
-				</div>
+				{currentUser && (
+					<div
+						className=' flex justify-center items-center hover:cursor-pointer top-3.5'
+						onMouseOver={() =>
+							setShowPopover(true)
+						}
+						onMouseOut={() =>
+							setShowPopover(false)
+						}
+						onClick={togglePopover}>
+						<img
+							className='w-[50px] h-[50px] object-contain'
+							src={
+								currentUser?.photoURL ||
+								DefaultAvatar
+							}
+							alt='profile image'
+						/>
+						{currentUser?.displayName && (
+							<span>{`Welcome,${currentUser?.displayName}`}</span>
+						)}
+						<span className='text-3xl font-bold'>
+							˯
+						</span>
+						{showPopover && (
+							<div className='absolute min-w-[100px] flex flex-col top-1/2 translate-y-8 border-2 p-1.5 backdrop-blur-2xl hover:cursor-pointer'>
+								<a
+									className='hover:cursor-pointer'
+									onClick={handleSignOut}>
+									Logout
+								</a>
+							</div>
+						)}
+					</div>
+				)}
 			</div>
 		</>
 	);
-}
+};
 
-export default Navbar
+export default Navbar;

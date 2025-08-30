@@ -1,31 +1,30 @@
-import React, {
+import {
+	createUserWithEmailAndPassword,
+	signInWithEmailAndPassword,
+	updateProfile,
+} from 'firebase/auth';
+import {
 	useCallback,
 	useMemo,
 	useRef,
 	useState,
 } from 'react';
-import {
-	clearFormFields,
-	getDisplayErrorMessage,
-	getErrorMessage,
-} from '../utils/util';
+import { useDispatch } from 'react-redux';
+import { BANNER_IMAGE } from '../constants/constant';
 import {
 	AUTH_ERROR,
 	FORM_FIELD,
 } from '../constants/formConstant';
 import { auth } from '../utils/firebase';
 import {
-	createUserWithEmailAndPassword,
-	signInWithEmailAndPassword,
-} from 'firebase/auth';
+	getDisplayErrorMessage,
+	getErrorMessage,
+} from '../utils/util';
 
-import { useNavigate} from 'react-router-dom';
-import { BANNER_IMAGE } from '../constants/constant';
+import { addUser } from '../slice/userSlice';
 
 export const Login = () => {
-
-
-	const navigate = useNavigate();
+	const dispatch = useDispatch();
 
 	const [isLogin, setIsLogin] = useState(true);
 	const [error, setError] = useState({});
@@ -33,8 +32,16 @@ export const Login = () => {
 	const emailRef = useRef(null);
 	const passwordRef = useRef(null);
 	const nameRef = useRef(null);
+	const profilePicRef = useRef(null);
 
-	const refArr = [emailRef, passwordRef, nameRef];
+	const refArr = useMemo(() => {
+		return [
+			emailRef,
+			passwordRef,
+			nameRef,
+			profilePicRef,
+		];
+	}, []);
 
 	const toggleLoginForm = () => {
 		refArr?.forEach((ref) => {
@@ -85,7 +92,7 @@ export const Login = () => {
 	};
 
 	const handleUserAuthentication = useCallback(
-		(e) => {
+		async (e) => {
 			e.preventDefault();
 
 			if (isLoginDisabled) {
@@ -99,16 +106,12 @@ export const Login = () => {
 					passwordRef?.current?.value
 				)
 					.then((userCredential) => {
-						clearFormFields(refArr);
 						// Signed in
 						const user = userCredential.user;
 						console.log(user, 'user');
-
-						navigate("/browse")
 					})
 					.catch((error) => {
 						handleLoginError(error);
-						navigate("/")
 					});
 			} else {
 				createUserWithEmailAndPassword(
@@ -116,19 +119,32 @@ export const Login = () => {
 					emailRef?.current?.value,
 					passwordRef?.current?.value
 				)
-					.then((userCredential) => {
-						// Signed up
-						const user = userCredential.user;
+					.then(async (userCredential) => {
+						await updateProfile(
+							userCredential.user,
+							{
+								displayName:
+									nameRef?.current?.value,
+							}
+						);
 
-						console.log(user, 'user');
-						// ...
+						const { uid, email, displayName } =
+							auth.currentUser;
+
+						dispatch(
+							addUser({
+								uid,
+								email,
+								displayName,
+							})
+						);
 					})
 					.catch((error) => {
 						handleLoginError(error);
 					});
 			}
 		},
-		[isLogin, isLoginDisabled, refArr]
+		[dispatch, isLogin, isLoginDisabled]
 	);
 
 	return (
@@ -137,109 +153,111 @@ export const Login = () => {
 				src={BANNER_IMAGE}
 				className='w-full min-h-screen object-cover'
 				alt='Netflix Banner Image'
-          />
+			/>
 			<div className='flex items-center justify-center h-full z-20'>
-		<form
-			onSubmit={handleUserAuthentication}
-			className='px-12 h-[500px] justify-evenly absolute top-1/4 left-1/2 -translate-x-1/2 w-[80vw] max-w-sm min-w-[320px] bg-black/40 z-[9999] flex flex-col'>
-			<h1 className='text-2xl text-white font-extrabold'>{`${
-				isLogin ? 'Sign In' : 'Sign Up'
-			}`}</h1>
-			{!isLogin && (
-				<div>
-					<input
-						onChange={() =>
-							handleInput(
-								nameRef,
-								FORM_FIELD['NAME']
-							)
-						}
-						ref={nameRef}
-						className=' w-full p-4 outline-0 text-white border-gray-500 border-1 placeholder-gray-300'
-						type='text'
-						aria-label='Full Name'
-						placeholder='Full Name'
-					/>
-					{error[FORM_FIELD['NAME']] && (
+				<form
+					onSubmit={handleUserAuthentication}
+					className='px-12 h-[500px] justify-evenly absolute top-1/4 left-1/2 -translate-x-1/2 w-[80vw] max-w-sm min-w-[320px] bg-black/40 z-[9999] flex flex-col'>
+					<h1 className='text-2xl text-white font-extrabold'>{`${
+						isLogin ? 'Sign In' : 'Sign Up'
+					}`}</h1>
+					{!isLogin && (
+						<div>
+							<input
+								onChange={() =>
+									handleInput(
+										nameRef,
+										FORM_FIELD['NAME']
+									)
+								}
+								ref={nameRef}
+								className=' w-full p-4 outline-0 text-white border-gray-500 border-1 placeholder-gray-300'
+								type='text'
+								aria-label='Full Name'
+								placeholder='Full Name'
+							/>
+							{error[FORM_FIELD['NAME']] && (
+								<span className='text-red-500 text-[0.8rem]'>
+									{error[FORM_FIELD['NAME']]}
+								</span>
+							)}
+						</div>
+					)}
+					<div>
+						<input
+							onChange={() =>
+								handleInput(
+									emailRef,
+									FORM_FIELD['EMAIL']
+								)
+							}
+							ref={emailRef}
+							className=' w-full p-4 outline-0 text-white border-gray-500 border-1 placeholder-gray-300'
+							type='text'
+							aria-label='Email/Mobile no.'
+							placeholder='Email or mobile number'
+						/>
+						{error[FORM_FIELD['EMAIL']] && (
+							<span className='text-red-500 text-[0.8rem]'>
+								{error[FORM_FIELD['EMAIL']]}
+							</span>
+						)}
+					</div>
+					<div>
+						<input
+							onChange={() =>
+								handleInput(
+									passwordRef,
+									FORM_FIELD['PASSWORD']
+								)
+							}
+							ref={passwordRef}
+							className='p-4 w-full outline-0 text-white border-gray-500 border-1 placeholder-gray-300'
+							aria-label='password'
+							type='password'
+							placeholder='Password'
+						/>
+						{error[FORM_FIELD['PASSWORD']] && (
+							<span className='text-red-500 text-[0.8rem]'>
+								{error[FORM_FIELD['PASSWORD']]}
+							</span>
+						)}
+					</div>
+					<button
+						type='submit'
+						onClick={handleUserAuthentication}
+						className={`p-2 bg-red-600 text-white ${
+							isLoginDisabled
+								? 'disabled cursor-not-allowed opacity-50'
+								: 'cursor-pointer'
+						}`}>{`${
+						isLogin ? 'Sign In' : 'Sign Up'
+					}`}</button>
+					{error[AUTH_ERROR] && (
 						<span className='text-red-500 text-[0.8rem]'>
-							{error[FORM_FIELD['NAME']]}
+							{error[AUTH_ERROR]}
 						</span>
 					)}
-				</div>
-			)}
-			<div>
-				<input
-					onChange={() =>
-						handleInput(
-							emailRef,
-							FORM_FIELD['EMAIL']
-						)
-					}
-					ref={emailRef}
-					className=' w-full p-4 outline-0 text-white border-gray-500 border-1 placeholder-gray-300'
-					type='text'
-					aria-label='Email/Mobile no.'
-					placeholder='Email or mobile number'
-				/>
-				{error[FORM_FIELD['EMAIL']] && (
-					<span className='text-red-500 text-[0.8rem]'>
-						{error[FORM_FIELD['EMAIL']]}
-					</span>
-				)}
+					<div>
+						<span className='text-gray-400'>
+							{`${
+								isLogin
+									? 'New to Netflix?'
+									: 'Already have an account?'
+							}`}
+						</span>
+						<a
+							className='text-white cursor-pointer hover:underline'
+							onClick={toggleLoginForm}>
+							{`${
+								isLogin
+									? 'Sign up now'
+									: 'Sign in'
+							}`}
+						</a>
+					</div>
+				</form>
 			</div>
-			<div>
-				<input
-					onChange={() =>
-						handleInput(
-							passwordRef,
-							FORM_FIELD['PASSWORD']
-						)
-					}
-					ref={passwordRef}
-					className='p-4 w-full outline-0 text-white border-gray-500 border-1 placeholder-gray-300'
-					aria-label='password'
-					type='password'
-					placeholder='Password'
-				/>
-				{error[FORM_FIELD['PASSWORD']] && (
-					<span className='text-red-500 text-[0.8rem]'>
-						{error[FORM_FIELD['PASSWORD']]}
-					</span>
-				)}
-			</div>
-			<button
-				type='submit'
-				onClick={handleUserAuthentication}
-				className={`p-2 bg-red-600 text-white ${
-					isLoginDisabled
-						? 'disabled cursor-not-allowed opacity-50'
-						: 'cursor-pointer'
-				}`}>{`${
-				isLogin ? 'Sign In' : 'Sign Up'
-			}`}</button>
-			{error[AUTH_ERROR] && (
-				<span className='text-red-500 text-[0.8rem]'>
-					{error[AUTH_ERROR]}
-				</span>
-			)}
-			<div>
-				<span className='text-gray-400'>
-					{`${
-						isLogin
-							? 'New to Netflix?'
-							: 'Already have an account?'
-					}`}
-				</span>
-				<a
-					className='text-white cursor-pointer hover:underline'
-					onClick={toggleLoginForm}>
-					{`${
-						isLogin ? 'Sign up now' : 'Sign in'
-					}`}
-				</a>
-			</div>
-			</form>
-			</div>
-			</main>
+		</main>
 	);
 };
