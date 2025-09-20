@@ -8,13 +8,24 @@ import { useSelector } from 'react-redux';
 import DefaultAvatar from '../assets/Profile_Avatar.jpg';
 import { auth } from '../utils/firebase';
 
+interface User {
+	uid: string;
+	email: string | null;
+	displayName: string | null;
+	photoURL?: string | null;
+}
+
+interface RootState {
+	user: User | null;
+}
+
 const Navbar = () => {
 
 	const [showPopover, setShowPopover] =
 		useState(false);
 
 	const currentUser = useSelector(
-		(state) => state.user
+		(state: RootState) => state.user
 	);
 
 	console.log(currentUser, 'currentUser');
@@ -37,9 +48,9 @@ const Navbar = () => {
 	return (
 		<>
 			{/* Dark Overlay */}
-			<div className='absolute inset-0 bg-black/60 z-10'></div>
+			{/* <div className='absolute inset-0 bg-black/60 z-10'></div> */}
 
-			<div className='absolute top-0 z-[999] w-full flex justify-between px-2'>
+			<div className='absolute top-0 z-[999] bg-black/60  w-full flex justify-between px-2'>
 				<img
 					src={LOGO_IMAGE}
 					alt='Netflix Logo'

@@ -23,16 +23,20 @@ import {
 
 import { addUser } from '../slice/userSlice';
 
+interface IError {
+	[key: string]: string;
+}
+
 export const Login = () => {
 	const dispatch = useDispatch();
 
 	const [isLogin, setIsLogin] = useState(true);
-	const [error, setError] = useState({});
+	const [error, setError] = useState<IError>({});
 
-	const emailRef = useRef(null);
-	const passwordRef = useRef(null);
-	const nameRef = useRef(null);
-	const profilePicRef = useRef(null);
+	const emailRef = useRef<HTMLInputElement>(null);
+	const passwordRef = useRef<HTMLInputElement>(null);
+	const nameRef = useRef<HTMLInputElement>(null);
+	const profilePicRef = useRef<HTMLInputElement>(null);
 
 	const refArr = useMemo(() => {
 		return [
@@ -54,7 +58,7 @@ export const Login = () => {
 	};
 
 	const handleInput = useCallback(
-		(inputRef, fieldName) => {
+		(inputRef: React.RefObject<HTMLInputElement | null>, fieldName: string) => {
 			const errorMessage = getErrorMessage(
 				fieldName,
 				inputRef?.current?.value
@@ -84,7 +88,7 @@ export const Login = () => {
 		);
 	}, [error, isLogin]);
 
-	const handleLoginError = ({ message }) => {
+	const handleLoginError = ({ message }: { message: string }) => {
 		const errorMessage =
 			getDisplayErrorMessage(message);
 
@@ -92,7 +96,7 @@ export const Login = () => {
 	};
 
 	const handleUserAuthentication = useCallback(
-		async (e) => {
+		async (e: React.FormEvent) => {
 			e.preventDefault();
 
 			if (isLoginDisabled) {
@@ -102,8 +106,8 @@ export const Login = () => {
 			if (isLogin) {
 				signInWithEmailAndPassword(
 					auth,
-					emailRef?.current?.value,
-					passwordRef?.current?.value
+					emailRef?.current?.value || '',
+					passwordRef?.current?.value || ''
 				)
 					.then((userCredential) => {
 						// Signed in
@@ -116,8 +120,8 @@ export const Login = () => {
 			} else {
 				createUserWithEmailAndPassword(
 					auth,
-					emailRef?.current?.value,
-					passwordRef?.current?.value
+					emailRef?.current?.value || '',
+					passwordRef?.current?.value || ''
 				)
 					.then(async (userCredential) => {
 						await updateProfile(
@@ -129,7 +133,7 @@ export const Login = () => {
 						);
 
 						const { uid, email, displayName } =
-							auth.currentUser;
+							auth.currentUser!;
 
 						dispatch(
 							addUser({

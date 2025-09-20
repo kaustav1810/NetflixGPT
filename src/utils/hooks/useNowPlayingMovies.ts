@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { API_HEADER } from '../constants/apiConstants';
+import { API_HEADER } from '../../constants/apiConstants';
 
 export const useNowPlayingMovies = () => {
 	const [movies, setMovies] = useState([]);
