@@ -1,23 +1,23 @@
 import { useEffect, useState } from 'react';
-import { API_HEADER } from '../../constants/apiConstants';
+import { TMDB_API_HEADERS, TMDB_BASE_URL } from '../../constants/apiConstants';
+import { Movie } from '../../types';
 
 export const useNowPlayingMovies = () => {
-	const [movies, setMovies] = useState([]);
+	const [movies, setMovies] = useState<Movie[]>([]);
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				const data = await fetch(
-					'https://api.themoviedb.org/3/movie/now_playing?language=en-US&page=1',
+					`${TMDB_BASE_URL}/movie/now_playing?language=en-US&page=1`,
 					{
 						method: 'GET',
-						headers: API_HEADER,
+						headers: TMDB_API_HEADERS,
 					}
 				);
 				const jsonData = await data.json();
 
-				const nowPlayingMovies =
-					jsonData?.results;
+				const nowPlayingMovies: Movie[] = jsonData?.results || [];
 
 				setMovies(nowPlayingMovies);
 			} catch (e) {

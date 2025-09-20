@@ -2,14 +2,14 @@ import { useEffect } from 'react';
 import './App.css';
 
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './utils/firebase';
+import { auth } from './lib/firebase';
 import { useDispatch } from 'react-redux';
 import {
 	addUser,
 	removeUser,
-} from './slice/userSlice';
+} from './store/slices/userSlice';
 import { Outlet, useNavigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import { Navbar } from './layouts/Navbar';
 
 function App() {
 	const dispatch = useDispatch();
@@ -25,8 +25,9 @@ function App() {
 					
 					dispatch(
 						addUser({
+							uid: user.uid,
 							displayName: user.displayName,
-							profilePhoto: user.photoURL,
+							photoURL: user.photoURL,
 							email: user.email
 						})
 					);

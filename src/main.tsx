@@ -1,25 +1,25 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import App from './App.js';
-import { store } from './store.js';
+import App from './App';
+import { store } from './store';
 import { Provider } from 'react-redux';
 import {
 	createBrowserRouter,
 	RouterProvider,
 } from 'react-router-dom';
-import Browse from './components/Browse.jsx';
-import { Login } from './components/Login.jsx';
+import BrowsePage from './pages/BrowsePage';
+import { LoginPage } from './pages/LoginPage';
 
 const appRouter = createBrowserRouter([
 	{
 		path: '/',
 		element: <App />,
 		children: [
-			{ index: true, element: <Login/> },
+			{ index: true, element: <LoginPage/> },
 			{
 				path: '/browse',
-				element: <Browse />,
+				element: <BrowsePage />,
 			},
 		],
 	},

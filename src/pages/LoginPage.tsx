@@ -15,36 +15,26 @@ import {
 	AUTH_ERROR,
 	FORM_FIELD,
 } from '../constants/formConstant';
-import { auth } from '../utils/firebase';
+import { auth } from '../lib/firebase';
 import {
 	getDisplayErrorMessage,
 	getErrorMessage,
-} from '../utils/util';
+} from '../utils/validation';
+import { addUser } from '../store/slices/userSlice';
+import { FormError } from '../types';
 
-import { addUser } from '../slice/userSlice';
-
-interface IError {
-	[key: string]: string;
-}
-
-export const Login = () => {
+export const LoginPage = () => {
 	const dispatch = useDispatch();
 
 	const [isLogin, setIsLogin] = useState(true);
-	const [error, setError] = useState<IError>({});
+	const [error, setError] = useState<FormError>({});
 
 	const emailRef = useRef<HTMLInputElement>(null);
 	const passwordRef = useRef<HTMLInputElement>(null);
 	const nameRef = useRef<HTMLInputElement>(null);
-	const profilePicRef = useRef<HTMLInputElement>(null);
 
 	const refArr = useMemo(() => {
-		return [
-			emailRef,
-			passwordRef,
-			nameRef,
-			profilePicRef,
-		];
+		return [emailRef, passwordRef, nameRef];
 	}, []);
 
 	const toggleLoginForm = () => {
@@ -53,24 +43,26 @@ export const Login = () => {
 		});
 
 		setError({});
-
 		setIsLogin((prev) => !prev);
 	};
 
 	const handleInput = useCallback(
-		(inputRef: React.RefObject<HTMLInputElement | null>, fieldName: string) => {
+		(
+			inputRef: React.RefObject<HTMLInputElement | null>,
+			fieldName: string
+		) => {
 			const errorMessage = getErrorMessage(
 				fieldName,
 				inputRef?.current?.value
 			);
 
-			setError({
-				...error,
+			setError((prevError) => ({
+				...prevError,
 				[fieldName]: errorMessage,
 				[AUTH_ERROR]: '',
-			});
+			}));
 		},
-		[error]
+		[]
 	);
 
 	const isLoginDisabled = useMemo(() => {
@@ -79,8 +71,7 @@ export const Login = () => {
 			Object.values(error).join('').length > 0 ||
 			(!isLogin &&
 				(!nameRef?.current ||
-					nameRef?.current?.value?.trim() ===
-						'')) ||
+					nameRef?.current?.value?.trim() === '')) ||
 			!emailRef?.current ||
 			emailRef?.current?.value?.trim() === '' ||
 			!passwordRef?.current ||
@@ -88,10 +79,12 @@ export const Login = () => {
 		);
 	}, [error, isLogin]);
 
-	const handleLoginError = ({ message }: { message: string }) => {
-		const errorMessage =
-			getDisplayErrorMessage(message);
-
+	const handleLoginError = ({
+		message,
+	}: {
+		message: string;
+	}) => {
+		const errorMessage = getDisplayErrorMessage(message);
 		setError({ [AUTH_ERROR]: errorMessage });
 	};
 
@@ -124,13 +117,9 @@ export const Login = () => {
 					passwordRef?.current?.value || ''
 				)
 					.then(async (userCredential) => {
-						await updateProfile(
-							userCredential.user,
-							{
-								displayName:
-									nameRef?.current?.value,
-							}
-						);
+						await updateProfile(userCredential.user, {
+							displayName: nameRef?.current?.value,
+						});
 
 						const { uid, email, displayName } =
 							auth.currentUser!;
@@ -148,7 +137,7 @@ export const Login = () => {
 					});
 			}
 		},
-		[dispatch, isLogin, isLoginDisabled]
+		[dispatch, isLogin, isLoginDisabled, handleLoginError]
 	);
 
 	return (
