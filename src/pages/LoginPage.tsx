@@ -150,8 +150,8 @@ export const LoginPage = () => {
 			<div className='flex items-center justify-center h-full z-20'>
 				<form
 					onSubmit={handleUserAuthentication}
-					className='px-12 h-[500px] justify-evenly absolute top-1/4 left-1/2 -translate-x-1/2 w-[80vw] max-w-sm min-w-[320px] bg-black/40 z-[9999] flex flex-col'>
-					<h1 className='text-2xl text-white font-extrabold'>{`${
+					className='px-12 py-12 justify-evenly absolute top-1/4 left-1/2 -translate-x-1/2 w-[80vw] max-w-md min-w-[320px] bg-black/75 backdrop-blur-sm rounded-md z-[9999] flex flex-col gap-4'>
+					<h1 className='text-3xl text-white font-bold mb-4'>{`${
 						isLogin ? 'Sign In' : 'Sign Up'
 					}`}</h1>
 					{!isLogin && (
@@ -164,7 +164,7 @@ export const LoginPage = () => {
 									)
 								}
 								ref={nameRef}
-								className=' w-full p-4 outline-0 text-white border-gray-500 border-1 placeholder-gray-300'
+								className='w-full p-4 bg-gray-700/50 rounded-md outline-0 text-white border border-gray-600 placeholder-gray-400 focus:border-white focus:bg-gray-700/70 transition-colors'
 								type='text'
 								aria-label='Full Name'
 								placeholder='Full Name'
@@ -185,7 +185,7 @@ export const LoginPage = () => {
 								)
 							}
 							ref={emailRef}
-							className=' w-full p-4 outline-0 text-white border-gray-500 border-1 placeholder-gray-300'
+							className='w-full p-4 bg-gray-700/50 rounded-md outline-0 text-white border border-gray-600 placeholder-gray-400 focus:border-white focus:bg-gray-700/70 transition-colors'
 							type='text'
 							aria-label='Email/Mobile no.'
 							placeholder='Email or mobile number'
@@ -205,7 +205,7 @@ export const LoginPage = () => {
 								)
 							}
 							ref={passwordRef}
-							className='p-4 w-full outline-0 text-white border-gray-500 border-1 placeholder-gray-300'
+							className='w-full p-4 bg-gray-700/50 rounded-md outline-0 text-white border border-gray-600 placeholder-gray-400 focus:border-white focus:bg-gray-700/70 transition-colors'
 							aria-label='password'
 							type='password'
 							placeholder='Password'
@@ -219,10 +219,10 @@ export const LoginPage = () => {
 					<button
 						type='submit'
 						onClick={handleUserAuthentication}
-						className={`p-2 bg-red-600 text-white ${
+						className={`p-3 mt-4 bg-red-600 text-white rounded-md font-semibold ${
 							isLoginDisabled
 								? 'disabled cursor-not-allowed opacity-50'
-								: 'cursor-pointer'
+								: 'cursor-pointer hover:bg-red-700 transition-colors'
 						}`}>{`${
 						isLogin ? 'Sign In' : 'Sign Up'
 					}`}</button>
@@ -231,16 +231,16 @@ export const LoginPage = () => {
 							{error[AUTH_ERROR]}
 						</span>
 					)}
-					<div>
+					<div className='mt-4'>
 						<span className='text-gray-400'>
 							{`${
 								isLogin
 									? 'New to Netflix?'
 									: 'Already have an account?'
 							}`}
-						</span>
+						</span>{' '}
 						<a
-							className='text-white cursor-pointer hover:underline'
+							className='text-white cursor-pointer hover:underline font-semibold'
 							onClick={toggleLoginForm}>
 							{`${
 								isLogin
